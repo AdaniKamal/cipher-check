@@ -197,6 +197,56 @@
       font-size: 0.85rem;
       font-style: italic;
     }
+
+    .flow-diagram {
+      display: flex;
+      align-items: center;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 1rem 0.75rem;
+      margin-bottom: 1.5rem;
+      justify-content: space-between;
+      overflow-x: auto;
+      gap: 0;
+    }
+
+    .flow-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .flow-icon {
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+
+    .flow-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #e6edf3;
+      white-space: nowrap;
+    }
+
+    .flow-sub {
+      font-size: 0.63rem;
+      color: #8b949e;
+      text-align: center;
+      font-family: 'Courier New', monospace;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: #484f58;
+      font-size: 1rem;
+      flex-shrink: 0;
+      padding: 0 0.25rem;
+      margin-bottom: 1.1rem;
+    }
   </style>
 </head>
 <body>
@@ -206,6 +256,39 @@
     Paste your <code>nmap</code> TLS output, clean it, then check each cipher against
     <a href="https://ciphersuite.info" target="_blank" rel="noopener">ciphersuite.info</a>.
   </p>
+
+  <!-- Flow diagram -->
+  <div class="flow-diagram">
+    <div class="flow-step">
+      <div class="flow-icon">🖥️</div>
+      <div class="flow-label">nmap scan</div>
+      <div class="flow-sub">raw TLS output</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-icon">🧹</div>
+      <div class="flow-label">Clean</div>
+      <div class="flow-sub">extract cipher names</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-icon">🔄</div>
+      <div class="flow-label">Normalize</div>
+      <div class="flow-sub">TLS_AKE_WITH_* → IANA</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-icon">🌐</div>
+      <div class="flow-label">API lookup</div>
+      <div class="flow-sub">ciphersuite.info</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-icon">✅</div>
+      <div class="flow-label">Result</div>
+      <div class="flow-sub">strong / weak</div>
+    </div>
+  </div>
 
   <!-- Input -->
   <label for="rawInput">Nmap Output</label>
