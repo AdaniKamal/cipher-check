@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cipher Strength Checker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #e6edf3;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #8b949e;
+      margin-bottom: 2rem;
+    }
+
+    .subtitle a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+
+    .subtitle a:hover { text-decoration: underline; }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      padding: 0.75rem 1rem;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    textarea:focus { border-color: #58a6ff; }
+
+    .btn-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: opacity 0.15s, background 0.15s;
+    }
+
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-clean {
+      background: #21262d;
+      color: #c9d1d9;
+      border-color: #30363d;
+    }
+
+    .btn-clean:hover:not(:disabled) { background: #30363d; }
+
+    .btn-check {
+      background: #1f6feb;
+      color: #fff;
+      border-color: #1f6feb;
+    }
+
+    .btn-check:hover:not(:disabled) { background: #388bfd; }
+
+    .btn-reset {
+      background: transparent;
+      color: #8b949e;
+      border-color: #30363d;
+      margin-left: auto;
+    }
+
+    .btn-reset:hover:not(:disabled) { color: #c9d1d9; }
+
+    .section {
+      margin-top: 1.75rem;
+    }
+
+    .cleaned-box {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      max-height: 160px;
+      overflow-y: auto;
+      white-space: pre;
+    }
+
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+
+    .results-table th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #30363d;
+      color: #8b949e;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .results-table td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid #21262d;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      vertical-align: middle;
+    }
+
+    .results-table tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.65rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .badge-recommended { background: #1a3a1a; color: #3fb950; border: 1px solid #238636; }
+    .badge-secure      { background: #1a2e1a; color: #56d364; border: 1px solid #2ea043; }
+    .badge-weak        { background: #3a1a1a; color: #f85149; border: 1px solid #da3633; }
+    .badge-insecure    { background: #2d0f0f; color: #ff7b72; border: 1px solid #b91c1c; }
+    .badge-unknown     { background: #21262d; color: #8b949e; border: 1px solid #30363d; }
+    .badge-loading     { background: #1c2128; color: #8b949e; border: 1px solid #30363d; }
+
+    .spinner {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border: 2px solid #30363d;
+      border-top-color: #58a6ff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status-bar {
+      font-size: 0.78rem;
+      color: #8b949e;
+      margin-top: 0.5rem;
+    }
+
+    .empty-hint {
+      color: #8b949e;
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🔐 Cipher Strength Checker</h1>
+  <p class="subtitle">
+    Paste your <code>nmap</code> TLS output, clean it, then check each cipher against
+    <a href="https://ciphersuite.info" target="_blank" rel="noopener">ciphersuite.info</a>.
+  </p>
+
+  <!-- Input -->
+  <label for="rawInput">Nmap Output</label>
+  <textarea id="rawInput" placeholder="|       TLS_AKE_WITH_AES_256_GCM_SHA384 (ecdh_x25519) - A&#10;|       TLS_AKE_WITH_CHACHA20_POLY1305_SHA256 (ecdh_x25519) - A&#10;|       TLS_AKE_WITH_AES_128_GCM_SHA256 (ecdh_x25519) - A"></textarea>
+
+  <div class="btn-row">
+    <button class="btn-clean" onclick="cleanInput()">Clean</button>
+    <button class="btn-check" id="btnCheck" onclick="checkCiphers()" disabled>Check</button>
+    <button class="btn-reset" onclick="resetAll()">Reset</button>
+  </div>
+
+  <!-- Cleaned output -->
+  <div class="section" id="cleanedSection" style="display:none">
+    <label>Cleaned Ciphers</label>
+    <div class="cleaned-box" id="cleanedBox"></div>
+  </div>
+
+  <!-- Results -->
+  <div class="section" id="resultsSection" style="display:none">
+    <label>Results</label>
+    <div id="statusBar" class="status-bar"></div>
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>Cipher Suite</th>
+          <th>Security</th>
+        </tr>
+      </thead>
+      <tbody id="resultsBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  let cleanedCiphers = [];
+
+  function extractCiphers(raw) {
+    const lines = raw.split('\n');
+    const ciphers = [];
+    for (const line of lines) {
+      // Match any TLS_... or SSL_... token at the start of a word boundary
+      const match = line.match(/\b((?:TLS|SSL)_[A-Z0-9_]+)/);
+      if (match) ciphers.push(match[1]);
+    }
+    return [...new Set(ciphers)]; // dedupe
+  }
+
+  function cleanInput() {
+    const raw = document.getElementById('rawInput').value.trim();
+    if (!raw) return;
+
+    cleanedCiphers = extractCiphers(raw);
+
+    if (cleanedCiphers.length === 0) {
+      alert('No cipher suite names found. Make sure your nmap output contains TLS_... or SSL_... entries.');
+      return;
+    }
+
+    document.getElementById('cleanedBox').textContent = cleanedCiphers.join('\n');
+    document.getElementById('cleanedSection').style.display = 'block';
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('btnCheck').disabled = false;
+  }
+
+  // Normalize nmap-specific cipher names to IANA names for API lookup.
+  // nmap TLS 1.3: TLS_AKE_WITH_AES_256_GCM_SHA384 → TLS_AES_256_GCM_SHA384
+  function normalizeCipher(cipher) {
+    return cipher.replace(/^TLS_AKE_WITH_/, 'TLS_').replace(/^SSL_CK_/, 'SSL_');
+  }
+
+  async function checkCiphers() {
+    if (cleanedCiphers.length === 0) return;
+
+    const btn = document.getElementById('btnCheck');
+    btn.disabled = true;
+
+    document.getElementById('resultsSection').style.display = 'block';
+    const tbody = document.getElementById('resultsBody');
+    const statusBar = document.getElementById('statusBar');
+
+    // Render skeleton rows
+    tbody.innerHTML = cleanedCiphers.map(c => `
+      <tr id="row-${c}">
+        <td>${c}</td>
+        <td><span class="badge badge-loading"><span class="spinner"></span>checking…</span></td>
+      </tr>
+    `).join('');
+
+    let done = 0;
+
+    const tasks = cleanedCiphers.map(async (cipher) => {
+      const cell = document.querySelector(`#row-${CSS.escape(cipher)} td:last-child`);
+      const lookup = normalizeCipher(cipher);
+      try {
+        const res = await fetch(`https://ciphersuite.info/api/cs/${encodeURIComponent(lookup)}/`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const info = data[lookup] || Object.values(data)[0];
+        const sec = (info?.security || 'unknown').toLowerCase();
+        cell.innerHTML = renderBadge(sec);
+      } catch {
+        cell.innerHTML = renderBadge('unknown');
+      }
+      done++;
+      statusBar.textContent = `Checked ${done} / ${cleanedCiphers.length}`;
+    });
+
+    await Promise.all(tasks);
+    statusBar.textContent = `Done — ${cleanedCiphers.length} cipher${cleanedCiphers.length > 1 ? 's' : ''} checked.`;
+    btn.disabled = false;
+  }
+
+  function renderBadge(security) {
+    const labels = {
+      recommended: 'Recommended',
+      secure:      'Secure',
+      weak:        'Weak',
+      insecure:    'Insecure',
+      unknown:     'Unknown',
+    };
+    const cls = ['recommended','secure','weak','insecure'].includes(security) ? security : 'unknown';
+    return `<span class="badge badge-${cls}">${labels[cls] || security}</span>`;
+  }
+
+  function resetAll() {
+    document.getElementById('rawInput').value = '';
+    document.getElementById('cleanedSection').style.display = 'none';
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('btnCheck').disabled = true;
+    document.getElementById('statusBar').textContent = '';
+    document.getElementById('resultsBody').innerHTML = '';
+    cleanedCiphers = [];
+  }
+</script>
+</body>
+</html>
